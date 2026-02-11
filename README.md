@@ -5,7 +5,7 @@ This repository contains the computational framework, datasets, and interactive 
 ## Abstract
 This work introduces a novel algebraic operator, $C_{n}^{(3)}(m) = n(n-m)(2n-m)(3n-m)$, designed for the systematic generation of congruent number candidates. We prove a universal mapping to Euclidean parameters ($u=2n-m, v=n$), enabling an exhaustive exploration of the parametric space $1 < u/v < 2$. The framework is validated through a 12.4M record audit, demonstrating a stable platykurtic distribution and modular alignment with Tunnell’s criteria.
 
-## 🚀 Interactive Visualization
+## Interactive Visualization
 The repository includes an interactive dashboard (`index.html`) developed in p5.js and Math.js. This tool allows real-time exploration of the $k=3$ operator:
 * **Real-time Parametric Mapping**: Visualize the transformation from $(n, m)$ to Euclidean $(u, v)$ space.
 * **Theorem Verification**: Instant validation of Theorem 10 (SF Invariant) and Lemma 4 (Inheritance Property).
