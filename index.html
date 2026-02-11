@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>The k=3 Multifactorial Operator | Interactive Framework v2</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e8e8e8;
+            overflow: hidden;
+        }
+        
+        #container { 
+            display: flex; 
+            height: 100vh; 
+            width: 100vw;
+        }
+        
+        #sidebar { 
+            width: 480px; 
+            background: rgba(15, 20, 40, 0.95);
+            padding: 25px;
+            overflow-y: auto;
+            border-right: 2px solid #2a5298;
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #canvas-container { 
+            flex: 1; 
+            position: relative;
+        }
+        
+        /* Typography */
+        h1 { 
+            color: #4a9eff; 
+            font-size: 20px; 
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        h2 { 
+            color: #ffd93d; 
+            font-size: 16px; 
+            margin: 15px 0 10px 0;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 217, 61, 0.3);
+            padding-bottom: 5px;
+        }
+        
+        .subtitle { 
+            font-size: 11px; 
+            color: #8899bb; 
+            margin-bottom: 20px;
+        }
+        
+        /* Cards */
+        .card { 
+            background: rgba(30, 40, 70, 0.6);
+            border: 1px solid #3a5298;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 12px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            background: rgba(40, 50, 80, 0.7);
+            border-color: #4a7aff;
+            box-shadow: 0 4px 15px rgba(74, 122, 255, 0.2);
+        }
+        
+        .card-highlight {
+            border: 2px solid #ffd93d;
+            background: rgba(60, 50, 20, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 217, 61, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 217, 61, 0.6); }
+        }
+        
+        .card-special {
+            border: 2px solid #ff6b6b;
+            background: rgba(60, 20, 20, 0.5);
+        }
+        
+        /* Math display */
+        .math { 
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 16px;
+            color: #4a9eff;
+            padding: 8px;
+            background: rgba(74, 158, 255, 0.05);
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        
+        .math-large {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .highlight-value {
+            color: #6bff6b;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        /* Controls */
+        .control-group { 
+            margin: 15px 0;
+        }
+        
+        label { 
+            display: block;
+            font-size: 13px;
+            color: #b0c4de;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input[type="range"] { 
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(to right, #2a5298, #4a9eff);
+            border-radius: 3px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #4a9eff;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(74, 158, 255, 0.5);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #6bbaff;
+            transform: scale(1.1);
+        }
+        
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        button {
+            flex: 1;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #2a5298 0%, #3a6aa8 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #3a6aa8 0%, #4a8ac8 100%);
+            box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.active {
+            background: linear-gradient(135deg, #ffd93d 0%, #ffb93d 100%);
+            color: #0a0e27;
+        }
+        
+        /* Property indicators */
+        .property {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+        }
+        
+        .property:last-child {
+            border-bottom: none;
+        }
+        
+        .property-label {
+            color: #8899bb;
+        }
+        
+        .property-value {
+            color: #4a9eff;
+            font-weight: 600;
+        }
+        
+        /* Special indicators */
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+        }
+        
+        .alert-success {
+            background: rgba(107, 255, 107, 0.15);
+            border: 2px solid #6bff6b;
+            color: #6bff6b;
+        }
+        
+        .alert-warning {
+            background: rgba(255, 217, 61, 0.15);
+            border: 2px solid #ffd93d;
+            color: #ffd93d;
+        }
+        
+        .alert-info {
+            background: rgba(74, 158, 255, 0.15);
+            border: 2px solid #4a9eff;
+            color: #4a9eff;
+        }
+        
+        /* Modular display */
+        .modular-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .modular-cell {
+            padding: 8px;
+            background: rgba(74, 158, 255, 0.1);
+            border: 1px solid #3a5298;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 11px;
+        }
+        
+        .modular-cell.active {
+            background: rgba(107, 255, 107, 0.2);
+            border-color: #6bff6b;
+            font-weight: bold;
+        }
+        
+        /* Scrollbar */
+        #sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #sidebar::-webkit-scrollbar-track {
+            background: rgba(20, 25, 45, 0.5);
+        }
+        
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #2a5298;
+            border-radius: 4px;
+        }
+        
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: #3a6aa8;
+        }
+        
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        /* Stats display */
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 12px;
+        }
+        
+        .stats-label {
+            color: #8899bb;
+        }
+        
+        .stats-value {
+            color: #6bff6b;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h1>THE k=3 MULTIFACTORIAL OPERATOR</h1>
+            <div class="subtitle">Interactive Visualization Framework | F.J. Lucero Bravo, 2026</div>
+            
+            <!-- Main Operator Card -->
+            <div class="card">
+                <h2>🔢 Operator Definition</h2>
+                <div class="math math-large">
+                    C<sub>n</sub><sup>(3)</sup>(m) = n(n−m)(2n−m)(3n−m)
+                </div>
+                <div class="property">
+                    <span class="property-label">Polynomial Degree:</span>
+                    <span class="property-value">4</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">Leading Coefficient:</span>
+                    <span class="property-value">6</span>
+                </div>
+            </div>
+            
+            <!-- Parameter Controls -->
+            <div class="card">
+                <h2>⚙️ Parameters</h2>
+                <div class="control-group">
+                    <label>Index n: <span id="n-value" class="highlight-value">5</span></label>
+                    <input type="range" id="n-slider" min="2" max="50" value="5" step="1">
+                </div>
+                <div class="control-group">
+                    <label>Shift m: <span id="m-value" class="highlight-value">2</span> <span style="color: #8899bb; font-size: 11px;">(max: n-1)</span></label>
+                    <input type="range" id="m-slider" min="1" max="4" value="2" step="1">
+                </div>
+            </div>
+            
+            <!-- Operator Result -->
+            <div class="card" id="result-card">
+                <h2>📊 Operator Result</h2>
+                <div class="property">
+                    <span class="property-label">C<sub>n</sub><sup>(3)</sup>(m) =</span>
+                    <span class="property-value" id="operator-result">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">Square-free core sf(N) =</span>
+                    <span class="property-value" id="sf-result">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">Factorization:</span>
+                    <span class="property-value" id="factorization" style="font-size: 11px;">--</span>
+                </div>
+            </div>
+            
+            <!-- Universal Parametrization -->
+            <div class="card">
+                <h2>🎯 Universal Euclidean Parametrization</h2>
+                <div class="math">u = 2n − m,  v = n</div>
+                <div class="property">
+                    <span class="property-label">u =</span>
+                    <span class="property-value" id="u-value">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">v =</span>
+                    <span class="property-value" id="v-value">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">Ratio u/v =</span>
+                    <span class="property-value" id="uv-ratio">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">Theoretical Range:</span>
+                    <span class="property-value">(1, 2)</span>
+                </div>
+            </div>
+            
+            <!-- Pythagorean Triple -->
+            <div class="card">
+                <h2>📐 Pythagorean Triple</h2>
+                <div class="math">a = u² − v², b = 2uv, c = u² + v²</div>
+                <div class="property">
+                    <span class="property-label">a =</span>
+                    <span class="property-value" id="triple-a">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">b =</span>
+                    <span class="property-value" id="triple-b">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">c =</span>
+                    <span class="property-value" id="triple-c">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">Area = ab/2 =</span>
+                    <span class="property-value highlight-value" id="area-result">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">Verification:</span>
+                    <span class="property-value" id="pythagoras-check">--</span>
+                </div>
+            </div>
+            
+            <!-- Special Cases Alerts -->
+            <div id="alert-invariant" class="alert alert-success">
+                ✨ INVARIANT DETECTED: m = n/2 with n even<br>
+                sf(C<sub>n</sub><sup>(3)</sup>(n/2)) = 30 (Theorem 10)
+            </div>
+            
+            <div id="alert-frontier" class="alert alert-warning">
+                🎯 FRONTIER CASE: m = n-1<br>
+                C<sub>n</sub><sup>(3)</sup>(n-1) ≡ C<sub>n+1</sub><sup>(2)</sup>(1) (Theorem 7)
+            </div>
+            
+            <div id="alert-degenerate" class="alert alert-info">
+                🔷 DEGENERATE CASE: n = 2<br>
+                m ∈ {1} → Triple degeneracy (Theorem 9)
+            </div>
+            
+            <!-- Modular Properties -->
+            <div class="card">
+                <h2>🔢 Modular Properties</h2>
+                <div class="property">
+                    <span class="property-label">N (mod 6) ≡</span>
+                    <span class="property-value" id="mod6-raw">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">N (mod 8) ≡</span>
+                    <span class="property-value" id="mod8-raw">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">sf(N) (mod 8) ≡</span>
+                    <span class="property-value" id="mod8-sf">--</span>
+                </div>
+                <div class="property">
+                    <span class="property-label">sf(N) (mod 3) ≡</span>
+                    <span class="property-value" id="mod3-sf">--</span>
+                </div>
+                
+                <h2 style="margin-top: 15px;">📈 Historical Distribution (mod 8)</h2>
+                <div class="modular-grid" id="mod8-grid">
+                    <div class="modular-cell">0<br><span id="mod8-0">0</span></div>
+                    <div class="modular-cell">1<br><span id="mod8-1">0</span></div>
+                    <div class="modular-cell">2<br><span id="mod8-2">0</span></div>
+                    <div class="modular-cell">3<br><span id="mod8-3">0</span></div>
+                    <div class="modular-cell">4<br><span id="mod8-4">0</span></div>
+                    <div class="modular-cell">5<br><span id="mod8-5">0</span></div>
+                    <div class="modular-cell">6<br><span id="mod8-6">0</span></div>
+                    <div class="modular-cell">7<br><span id="mod8-7">0</span></div>
+                </div>
+            </div>
+            
+            <!-- Exploration Modes -->
+            <div class="card">
+                <h2>🎮 Exploration Modes</h2>
+                <div class="button-group">
+                    <button id="mode-free" class="active">Free</button>
+                    <button id="mode-invariant">Invariant</button>
+                    <button id="mode-frontier">Frontier</button>
+                </div>
+                <button id="btn-clear" style="width: 100%; margin-top: 10px;">Clear History</button>
+            </div>
+            
+            <!-- Statistics -->
+            <div class="card">
+                <h2>📊 Session Statistics</h2>
+                <div class="stats-row">
+                    <span class="stats-label">Points generated:</span>
+                    <span class="stats-value" id="stat-points">0</span>
+                </div>
+                <div class="stats-row">
+                    <span class="stats-label">Unique SF cores:</span>
+                    <span class="stats-value" id="stat-unique">0</span>
+                </div>
+                <div class="stats-row">
+                    <span class="stats-label">Invariant hits (SF=30):</span>
+                    <span class="stats-value" id="stat-invariant">0</span>
+                </div>
+                <div class="stats-row">
+                    <span class="stats-label">Avg u/v ratio:</span>
+                    <span class="stats-value" id="stat-ratio">--</span>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="card">
+                <h2>📝 Legend</h2>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #4a9eff;"></div>
+                        <span>Current</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: rgba(74, 158, 255, 0.3);"></div>
+                        <span>History</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #ffd93d;"></div>
+                        <span>SF = 30</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #ff6b6b;"></div>
+                        <span>Frontier</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #6677aa;">
+                Based on: "The k=3 Multifactorial Operator" (2026)<br>
+                F.J. Lucero Bravo | arXiv preprint
+            </div>
+        </div>
+        
+        <div id="canvas-container"></div>
+    </div>
+    
+    <script>
+        // ============================================================================
+        // MATHEMATICAL FUNCTIONS
+        // ============================================================================
+        
+        // Square-free part extraction
+        function squareFreePart(n) {
+            if (n === 0) return 0;
+            n = Math.abs(Math.floor(n));
+            
+            let result = 1;
+            let temp = n;
+            
+            // Trial division
+            for (let p = 2; p * p <= temp; p++) {
+                let count = 0;
+                while (temp % p === 0) {
+                    count++;
+                    temp /= p;
+                }
+                if (count % 2 === 1) {
+                    result *= p;
+                }
+            }
+            
+            // Remaining prime factor
+            if (temp > 1) {
+                result *= temp;
+            }
+            
+            return result;
+        }
+        
+        // Prime factorization
+        function primeFactorization(n) {
+            if (n <= 1) return [];
+            
+            const factors = [];
+            let temp = n;
+            
+            for (let p = 2; p * p <= temp; p++) {
+                let count = 0;
+                while (temp % p === 0) {
+                    count++;
+                    temp /= p;
+                }
+                if (count > 0) {
+                    factors.push({ prime: p, exponent: count });
+                }
+            }
+            
+            if (temp > 1) {
+                factors.push({ prime: temp, exponent: 1 });
+            }
+            
+            return factors;
+        }
+        
+        // Format factorization
+        function formatFactorization(n) {
+            const factors = primeFactorization(n);
+            if (factors.length === 0) return "1";
+            
+            return factors.map(f => 
+                f.exponent === 1 ? `${f.prime}` : `${f.prime}^${f.exponent}`
+            ).join(" × ");
+        }
+        
+        // Operator C_n^(3)(m)
+        function operatorC3(n, m) {
+            return n * (n - m) * (2*n - m) * (3*n - m);
+        }
+        
+        // Check if number is congruent (simplified)
+        function isLikelyCongruent(N) {
+            // Based on modular conditions from paper
+            const mod8 = N % 8;
+            const mod3 = N % 3;
+            
+            // All valid mod 8 classes: 1, 2, 3, 5, 6, 7
+            const validMod8 = [1, 2, 3, 5, 6, 7].includes(mod8);
+            
+            return validMod8;
+        }
+        
+        // ============================================================================
+        // P5.JS SKETCH
+        // ============================================================================
+        
+        let nSlider, mSlider;
+        let currentMode = 'free';
+        let history = [];
+        let mod8Distribution = [0, 0, 0, 0, 0, 0, 0, 0];
+        let statistics = {
+            points: 0,
+            uniqueSF: new Set(),
+            invariantHits: 0,
+            ratioSum: 0
+        };
+        
+        function setup() {
+            const canvas = createCanvas(
+                windowWidth - 480, 
+                windowHeight
+            );
+            canvas.parent('canvas-container');
+            
+            // Get sliders
+            nSlider = select('#n-slider');
+            mSlider = select('#m-slider');
+            
+            // Mode buttons
+            select('#mode-free').mousePressed(() => setMode('free'));
+            select('#mode-invariant').mousePressed(() => setMode('invariant'));
+            select('#mode-frontier').mousePressed(() => setMode('frontier'));
+            select('#btn-clear').mousePressed(clearHistory);
+            
+            // Initial update
+            updateAll();
+        }
+        
+        function draw() {
+            background(10, 14, 39);
+            
+            // Update on slider change
+            if (nSlider && mSlider) {
+                updateAll();
+            }
+            
+            // Draw visualizations
+            drawUVSpace();
+            drawTriangle();
+            drawTheorems();
+        }
+        
+        function updateAll() {
+            const n = int(nSlider.value());
+            const m = int(mSlider.value());
+            
+            // Update m max constraint
+            mSlider.attribute('max', n - 1);
+            if (m >= n) {
+                mSlider.value(n - 1);
+            }
+            
+            // Apply mode constraints
+            applyModeConstraints(n, m);
+            
+            // Calculate all values
+            const C = operatorC3(n, m);
+            const sf = squareFreePart(C);
+            const u = 2*n - m;
+            const v = n;
+            const ratio = u / v;
+            
+            // Pythagorean triple
+            const a = u*u - v*v;
+            const b = 2*u*v;
+            const c = u*u + v*v;
+            const area = (a * b) / 2;
+            
+            // Update UI
+            select('#n-value').html(n);
+            select('#m-value').html(m);
+            select('#operator-result').html(C.toLocaleString());
+            select('#sf-result').html(sf);
+            select('#factorization').html(formatFactorization(C));
+            
+            select('#u-value').html(u);
+            select('#v-value').html(v);
+            select('#uv-ratio').html(ratio.toFixed(4));
+            
+            select('#triple-a').html(a);
+            select('#triple-b').html(b);
+            select('#triple-c').html(c);
+            select('#area-result').html(area.toLocaleString());
+            
+            // Pythagorean verification
+            const check = (a*a + b*b === c*c);
+            select('#pythagoras-check').html(check ? '✓ a² + b² = c²' : '✗ Failed');
+            
+            // Modular properties
+            select('#mod6-raw').html(C % 6);
+            select('#mod8-raw').html(C % 8);
+            select('#mod8-sf').html(sf % 8);
+            select('#mod3-sf').html(sf % 3);
+            
+            // Special cases detection
+            const isInvariant = (m === n/2 && n % 2 === 0 && sf === 30);
+            const isFrontier = (m === n - 1);
+            const isDegenerate = (n === 2);
+            
+            select('#alert-invariant').style('display', isInvariant ? 'block' : 'none');
+            select('#alert-frontier').style('display', isFrontier ? 'block' : 'none');
+            select('#alert-degenerate').style('display', isDegenerate ? 'block' : 'none');
+            
+            // Highlight result card
+            const resultCard = select('#result-card');
+            if (resultCard) {
+                if (isInvariant) {
+                    resultCard.removeClass('card-special');
+                    resultCard.addClass('card-highlight');
+                } else if (isFrontier) {
+                    resultCard.removeClass('card-highlight');
+                    resultCard.addClass('card-special');
+                } else {
+                    resultCard.removeClass('card-highlight');
+                    resultCard.removeClass('card-special');
+                }
+            }
+            
+            // Add to history
+            addToHistory({ n, m, u, v, ratio, sf, C, isInvariant, isFrontier });
+            
+            // Update statistics
+            updateStatistics();
+        }
+        
+        function applyModeConstraints(n, m) {
+            const currentN = int(nSlider.value());
+            const currentM = int(mSlider.value());
+            
+            if (currentMode === 'invariant') {
+                // Force m = n/2 for even n
+                if (currentN % 2 === 0) {
+                    mSlider.value(currentN / 2);
+                }
+            } else if (currentMode === 'frontier') {
+                // Force m = n-1
+                mSlider.value(currentN - 1);
+            }
+        }
+        
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // Update button states
+            const freeBtn = select('#mode-free');
+            const invBtn = select('#mode-invariant');
+            const frontBtn = select('#mode-frontier');
+            
+            if (freeBtn) {
+                if (mode === 'free') {
+                    freeBtn.addClass('active');
+                } else {
+                    freeBtn.removeClass('active');
+                }
+            }
+            
+            if (invBtn) {
+                if (mode === 'invariant') {
+                    invBtn.addClass('active');
+                } else {
+                    invBtn.removeClass('active');
+                }
+            }
+            
+            if (frontBtn) {
+                if (mode === 'frontier') {
+                    frontBtn.addClass('active');
+                } else {
+                    frontBtn.removeClass('active');
+                }
+            }
+            
+            // Apply immediately
+            const n = int(nSlider.value());
+            applyModeConstraints(n);
+        }
+        
+        function addToHistory(point) {
+            history.push(point);
+            
+            // Keep last 100 points
+            if (history.length > 100) {
+                history.shift();
+            }
+            
+            // Update mod 8 distribution
+            const mod = point.sf % 8;
+            mod8Distribution[mod]++;
+            
+            // Update display
+            for (let i = 0; i < 8; i++) {
+                select(`#mod8-${i}`).html(mod8Distribution[i]);
+                
+                // Highlight current
+                const cellElement = document.querySelectorAll('.modular-cell')[i];
+                if (cellElement) {
+                    if (i === mod) {
+                        cellElement.className = 'modular-cell active';
+                    } else {
+                        cellElement.className = 'modular-cell';
+                    }
+                }
+            }
+        }
+        
+        function updateStatistics() {
+            if (history.length === 0) return;
+            
+            // Count unique SF
+            const uniqueSF = new Set(history.map(p => p.sf));
+            
+            // Count invariant hits
+            const invariantCount = history.filter(p => p.isInvariant).length;
+            
+            // Average ratio
+            const avgRatio = history.reduce((sum, p) => sum + p.ratio, 0) / history.length;
+            
+            select('#stat-points').html(history.length);
+            select('#stat-unique').html(uniqueSF.size);
+            select('#stat-invariant').html(invariantCount);
+            select('#stat-ratio').html(avgRatio.toFixed(4));
+        }
+        
+        function clearHistory() {
+            history = [];
+            mod8Distribution = [0, 0, 0, 0, 0, 0, 0, 0];
+            
+            for (let i = 0; i < 8; i++) {
+                select(`#mod8-${i}`).html(0);
+            }
+            
+            select('#stat-points').html(0);
+            select('#stat-unique').html(0);
+            select('#stat-invariant').html(0);
+            select('#stat-ratio').html('--');
+        }
+        
+        // ============================================================================
+        // VISUALIZATION FUNCTIONS
+        // ============================================================================
+        
+        function drawUVSpace() {
+            push();
+            translate(width * 0.05, height * 0.05);
+            
+            const plotWidth = width * 0.9;
+            const plotHeight = height * 0.45;
+            
+            // Title
+            textAlign(LEFT);
+            textSize(18);
+            fill(74, 158, 255);
+            noStroke();
+            text('(u,v) Parameter Space Coverage', 0, -10);
+            
+            // Axes
+            stroke(100, 120, 150);
+            strokeWeight(2);
+            line(0, plotHeight, plotWidth, plotHeight); // x-axis
+            line(0, 0, 0, plotHeight); // y-axis
+            
+            // Grid
+            stroke(50, 60, 80, 100);
+            strokeWeight(1);
+            for (let i = 0; i <= 10; i++) {
+                const x = (i / 10) * plotWidth;
+                line(x, 0, x, plotHeight);
+                const y = (i / 10) * plotHeight;
+                line(0, y, plotWidth, y);
+            }
+            
+            // Theoretical bounds: 1 < u/v < 2
+            // This means: v < u < 2v
+            // Draw shaded region
+            fill(74, 158, 255, 15);
+            noStroke();
+            beginShape();
+            for (let v = 0; v <= 50; v++) {
+                const u_min = v + 1;
+                const u_max = 2*v - 1;
+                
+                const x_min = map(u_min, 0, 100, 0, plotWidth);
+                const x_max = map(u_max, 0, 100, 0, plotWidth);
+                const y_pos = map(v, 0, 50, plotHeight, 0);
+                
+                vertex(x_min, y_pos);
+            }
+            for (let v = 50; v >= 0; v--) {
+                const u_max = 2*v - 1;
+                const x_max = map(u_max, 0, 100, 0, plotWidth);
+                const y_pos = map(v, 0, 50, plotHeight, 0);
+                
+                vertex(x_max, y_pos);
+            }
+            endShape(CLOSE);
+            
+            // Draw boundary lines
+            stroke(74, 158, 255, 100);
+            strokeWeight(2);
+            line(0, plotHeight, plotWidth/2, 0); // u = v+1
+            line(0, plotHeight, plotWidth, 0);   // u = 2v-1
+            
+            // Labels
+            fill(150, 170, 200);
+            noStroke();
+            textSize(12);
+            textAlign(RIGHT);
+            text('u = v+1', plotWidth/2 - 10, 20);
+            text('u = 2v−1', plotWidth - 10, 20);
+            
+            // Draw history points
+            for (let i = 0; i < history.length - 1; i++) {
+                const p = history[i];
+                const x = map(p.u, 0, 100, 0, plotWidth);
+                const y = map(p.v, 0, 50, plotHeight, 0);
+                
+                // Color based on properties
+                if (p.isInvariant) {
+                    fill(255, 217, 61, 200);
+                } else if (p.isFrontier) {
+                    fill(255, 107, 107, 200);
+                } else {
+                    fill(74, 158, 255, 60);
+                }
+                noStroke();
+                ellipse(x, y, 6, 6);
+            }
+            
+            // Draw current point (larger)
+            if (history.length > 0) {
+                const current = history[history.length - 1];
+                const x = map(current.u, 0, 100, 0, plotWidth);
+                const y = map(current.v, 0, 50, plotHeight, 0);
+                
+                // Glow effect
+                for (let r = 20; r > 0; r -= 4) {
+                    fill(74, 158, 255, 10);
+                    noStroke();
+                    ellipse(x, y, r, r);
+                }
+                
+                // Main point
+                fill(74, 158, 255);
+                stroke(255);
+                strokeWeight(2);
+                ellipse(x, y, 12, 12);
+                
+                // Label
+                fill(255);
+                noStroke();
+                textAlign(CENTER);
+                textSize(11);
+                text(`(${current.u}, ${current.v})`, x, y - 15);
+            }
+            
+            // Axis labels
+            textAlign(CENTER);
+            textSize(14);
+            fill(150, 170, 200);
+            text('u = 2n − m', plotWidth / 2, plotHeight + 30);
+            
+            push();
+            translate(-30, plotHeight / 2);
+            rotate(-HALF_PI);
+            text('v = n', 0, 0);
+            pop();
+            
+            pop();
+        }
+        
+        function drawTriangle() {
+            if (history.length === 0) return;
+            
+            push();
+            translate(width * 0.05, height * 0.6);
+            
+            const current = history[history.length - 1];
+            const n = int(nSlider.value());
+            const m = int(mSlider.value());
+            
+            // Title
+            textAlign(LEFT);
+            textSize(18);
+            fill(74, 158, 255);
+            noStroke();
+            text(`Pythagorean Triangle: n=${n}, m=${m}`, 0, -10);
+            
+            const a = current.u * current.u - current.v * current.v;
+            const b = 2 * current.u * current.v;
+            const c = current.u * current.u + current.v * current.v;
+            
+            // Scale for display
+            const scale = min(width * 0.4 / max(a, b), height * 0.3 / max(a, b));
+            
+            const x0 = 100;
+            const y0 = height * 0.35 - 50;
+            
+            // Draw triangle
+            stroke(74, 158, 255);
+            strokeWeight(3);
+            fill(74, 158, 255, 30);
+            
+            triangle(
+                x0, y0,
+                x0 + a * scale, y0,
+                x0, y0 - b * scale
+            );
+            
+            // Draw hypotenuse
+            stroke(255, 217, 61);
+            strokeWeight(2);
+            line(x0 + a * scale, y0, x0, y0 - b * scale);
+            
+            // Labels
+            fill(255);
+            noStroke();
+            textSize(14);
+            textAlign(CENTER);
+            
+            // Side a
+            text(`a = ${a}`, x0 + a * scale / 2, y0 + 20);
+            
+            // Side b
+            push();
+            translate(x0 - 20, y0 - b * scale / 2);
+            rotate(-HALF_PI);
+            text(`b = ${b}`, 0, 0);
+            pop();
+            
+            // Hypotenuse c
+            const midX = (x0 + x0 + a * scale) / 2;
+            const midY = (y0 + y0 - b * scale) / 2;
+            text(`c = ${c}`, midX + 30, midY);
+            
+            // Area display
+            textSize(16);
+            fill(107, 255, 107);
+            text(`Area = ${((a * b) / 2).toLocaleString()}`, x0 + a * scale / 2, y0 - b * scale - 20);
+            
+            pop();
+        }
+        
+        function drawTheorems() {
+            push();
+            translate(width * 0.55, height * 0.6);
+            
+            // Title
+            textAlign(LEFT);
+            textSize(18);
+            fill(74, 158, 255);
+            noStroke();
+            text('Key Theorems Verification', 0, -10);
+            
+            const n = int(nSlider.value());
+            const m = int(mSlider.value());
+            
+            let yPos = 20;
+            const lineHeight = 30;
+            
+            textSize(13);
+            fill(200, 210, 230);
+            
+            // Theorem 3: Universal Parametrization
+            text('✓ Theorem 3: Universal Parametrization', 0, yPos);
+            textSize(11);
+            fill(150, 170, 200);
+            text('    u = 2n − m, v = n valid for all m ∈ [1, n−1]', 0, yPos + 15);
+            yPos += lineHeight + 15;
+            
+            // Theorem 7: Frontier Case
+            textSize(13);
+            fill(200, 210, 230);
+            if (m === n - 1) {
+                fill(255, 217, 61);
+                text('⚡ Theorem 7: FRONTIER CASE ACTIVE', 0, yPos);
+                textSize(11);
+                fill(255, 217, 61, 200);
+                text(`    C${n}(3)(${m}) ≡ C${n+1}(2)(1)`, 0, yPos + 15);
+            } else {
+                text('○ Theorem 7: Frontier Case (m = n−1)', 0, yPos);
+                textSize(11);
+                fill(150, 170, 200);
+                text('    Set m = n−1 to activate', 0, yPos + 15);
+            }
+            yPos += lineHeight + 15;
+            
+            // Theorem 10: Invariant
+            textSize(13);
+            fill(200, 210, 230);
+            if (m === n/2 && n % 2 === 0) {
+                const sf = squareFreePart(operatorC3(n, m));
+                if (sf === 30) {
+                    fill(107, 255, 107);
+                    text('⭐ Theorem 10: INVARIANT VERIFIED', 0, yPos);
+                    textSize(11);
+                    fill(107, 255, 107, 200);
+                    text('    sf(C_n(3)(n/2)) = 30 ✓', 0, yPos + 15);
+                } else {
+                    fill(255, 107, 107);
+                    text('⚠ Theorem 10: INVARIANT FAILED', 0, yPos);
+                    textSize(11);
+                    fill(255, 107, 107, 200);
+                    text(`    sf = ${sf} ≠ 30`, 0, yPos + 15);
+                }
+            } else {
+                text('○ Theorem 10: SF Invariant (m = n/2, n even)', 0, yPos);
+                textSize(11);
+                fill(150, 170, 200);
+                text('    Set m = n/2 with even n to activate', 0, yPos + 15);
+            }
+            yPos += lineHeight + 15;
+            
+            // Lemma 4: Inheritance
+            textSize(13);
+            fill(200, 210, 230);
+            text('✓ Lemma 4: Inheritance Property', 0, yPos);
+            const C2 = n * (n - m) * (2*n - m);
+            const factor = 3*n - m;
+            const C3 = operatorC3(n, m);
+            textSize(11);
+            fill(150, 170, 200);
+            text(`    C(3) = C(2) × (3n−m) = ${C2.toLocaleString()} × ${factor} = ${C3.toLocaleString()}`, 0, yPos + 15);
+            
+            pop();
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth - 480, windowHeight);
+        }
+    </script>
+</body>
+</html>
